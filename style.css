@@ -1,0 +1,15 @@
+body{
+    display: flex;
+}
+
+#form{
+    margin: 0 auto; /*gracias al flex del body podemos centrar con esto el form*/
+    background-color: lightslategray;
+    padding: 20px;
+    border: 2px solid black;
+    border-radius: 5px;
+}
+
+.campoForm{
+    margin-bottom: 10px;
+}
