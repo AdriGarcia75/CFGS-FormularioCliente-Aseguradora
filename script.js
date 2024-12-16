@@ -105,9 +105,42 @@ const NODOFORM = document.getElementById("form");
 /*hacer dos eventListeners, uno para "blur" (salir del campo) y otro para "input" (a la hora de escribir)
 ambas llamaran a distintos tipos de validacion, dependiendo de cuando se quieran validar*/
 NODOFORM.addEventListener("blur", (evento) => {
-    //con una funcion anonima has de meterle la logica aqui
-    //añadir distincion por ID a partir de evento.target
+    const TARGET = evento.target;
 
-    //añadir llamada al bla bla
+    //tagname devuelve la tag de html del evento que ha sido activado, devuelve el nombre en mayusculas (esto es para asegurarse que es el campo input el que llama)
+    if (TARGET.tagName == "INPUT") {
+        //utilizamos una variable booleana para controlar el resultado de una validacion de un campo en especifico
+        let isValid = true;
+        mensajeError = "";
+
+        switch (TARGET.id) {
+            case "nombre":
+            case "apellidos":
+                // Usamos la función para validar nombre y apellido
+                isValid = validarNombreApellido(TARGET.value);
+                mensajeError = "Este campo es obligatorio.";
+                break;
+            case "dni":
+                isValid = validarDNI(TARGET.value);
+                mensajeError = "El DNI debe tener 8 números y 1 letra mayúscula.";
+                break;
+            case "email":
+                isValid = validarCorreo(TARGET.value);
+                mensajeError = "Introduce un correo electrónico válido.";
+                break;
+        }
+
+        //y dependiendo de si el campo es valido o no
+        if (!isValid) {
+            //añadimos una clase para indicar que el campo es erroneo y le añadimos un mensaje
+            TARGET.classList.add("invalido");
+            TARGET.setAttribute("data-textoerror", mensajeError);
+        } else {
+            //y aqui quitamos esta información (por si en algun momento estaba mal escrito, dejar de enseñar el error)
+            TARGET.classList.remove("invalido");
+            TARGET.removeAttribute("data-textoerror");
+        }
+    }
+
 });
 

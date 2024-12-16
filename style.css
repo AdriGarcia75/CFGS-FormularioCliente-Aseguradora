@@ -13,3 +13,16 @@ body{
 .campoForm{
     margin-bottom: 10px;
 }
+
+/* estilos para mostrar errores */
+.invalido {
+    border: 2px solid red;
+}
+
+.invalido::after {
+    display: block;
+    color: red;
+    font-size: 0.9em;
+    margin-top: 5px;
+    content: attr(data-textoerror);
+}
