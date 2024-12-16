@@ -111,21 +111,22 @@ NODOFORM.addEventListener("blur", (evento) => {
     if (TARGET.tagName == "INPUT") {
         //utilizamos una variable booleana para controlar el resultado de una validacion de un campo en especifico
         let isValid = true;
+        let valor = TARGET.valor;
         mensajeError = "";
 
         switch (TARGET.id) {
             case "nombre":
             case "apellidos":
                 // Usamos la función para validar nombre y apellido
-                isValid = validarNombreApellido(TARGET.value);
+                isValid = validarNombreApellido(valor);
                 mensajeError = "Este campo es obligatorio.";
                 break;
             case "dni":
-                isValid = validarDNI(TARGET.value);
+                isValid = validarDNI(valor);
                 mensajeError = "El DNI debe tener 8 números y 1 letra mayúscula.";
                 break;
             case "email":
-                isValid = validarCorreo(TARGET.value);
+                isValid = validarCorreo(valor);
                 mensajeError = "Introduce un correo electrónico válido.";
                 break;
         }
