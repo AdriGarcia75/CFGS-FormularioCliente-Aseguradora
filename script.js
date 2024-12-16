@@ -97,18 +97,15 @@ function calculoSeguro() {
 
 }
 
-//evento controlador del formulario
+//nodo del formulario
 const NODOFORM = document.getElementById("form");
 
-//asignar el listener con toda la logica (llamadas a validacion y calculos)
-
-/*hacer dos eventListeners, uno para "blur" (salir del campo) y otro para "input" (a la hora de escribir)
-ambas llamaran a distintos tipos de validacion, dependiendo de cuando se quieran validar*/
+//listener de eventos de tipo blur para el formulario
 NODOFORM.addEventListener("blur", (evento) => {
     const TARGET = evento.target;
 
     //tagname devuelve la tag de html del evento que ha sido activado, devuelve el nombre en mayusculas (esto es para asegurarse que es el campo input el que llama)
-    if (TARGET.tagName == "INPUT") {
+    if (TARGET.tagName == "INPUT" || TARGET.tagName == "SELECT") {
         //utilizamos una variable booleana para controlar el resultado de una validacion de un campo en especifico
         let isValid = true;
         let valor = TARGET.valor;
@@ -121,13 +118,21 @@ NODOFORM.addEventListener("blur", (evento) => {
                 isValid = validarNombreApellido(valor);
                 mensajeError = "Este campo es obligatorio.";
                 break;
-            case "dni":
-                isValid = validarDNI(valor);
-                mensajeError = "El DNI debe tener 8 números y 1 letra mayúscula.";
+            case "fecha_carnet":
+                isValid = validarFecha(valor);
+                mensajeError = "Introduce una fecha válida para el carnet de conducir.";
                 break;
-            case "email":
-                isValid = validarCorreo(valor);
-                mensajeError = "Introduce un correo electrónico válido.";
+            case "fecha_matriculacion":
+                isValid = validarFecha(valor);
+                mensajeError = "Introduce una fecha válida para la matriculación.";
+                break;
+            case "fecha_nacimiento":
+                isValid = validarFecha(valor);
+                mensajeError = "Introduce una fecha válida de nacimiento.";
+                break;
+            case "sexo":
+                isValid = valor != "";
+                mensajeError = "Selecciona un sexo.";
                 break;
         }
 
@@ -145,3 +150,50 @@ NODOFORM.addEventListener("blur", (evento) => {
 
 });
 
+//listener de eventos de tipo input para el formulario
+NODOFORM.addEventListener("input", (evento) => {
+    const TARGET = evento.target;
+
+    //tagname devuelve la tag de html del evento que ha sido activado, devuelve el nombre en mayusculas (esto es para asegurarse que es el campo input el que llama)
+    if (TARGET.tagName == "INPUT") {
+        //utilizamos una variable booleana para controlar el resultado de una validacion de un campo en especifico
+        let isValid = true;
+        let valor = TARGET.valor;
+        mensajeError = "";
+
+        switch (TARGET.id) {
+            case "dni":
+                isValid = validarDNI(valor);
+                mensajeError = "El DNI debe tener 8 números y 1 letra mayúscula.";
+                break;
+            case "email":
+                isValid = validarCorreo(valor);
+                mensajeError = "Introduce un correo electrónico válido.";
+                break;
+            case "codigo_postal":
+                isValid = validarCodigoPostal(valor);
+                mensajeError = "Introduce un código postal válido.";
+                break;
+            case "telefono":
+                isValid = validarTelefono(valor);
+                mensajeError = "Introduce un código postal válido.";
+                break;
+            case "matricula":
+                isValid = validarMatricula(valor);
+                mensajeError = "Introduce una matricula que cumpla con el formato"
+                break;
+        }
+
+        //y dependiendo de si el campo es valido o no
+        if (!isValid) {
+            //añadimos una clase para indicar que el campo es erroneo y le añadimos un mensaje
+            TARGET.classList.add("invalido");
+            TARGET.setAttribute("data-textoerror", mensajeError);
+        } else {
+            //y aqui quitamos esta información (por si en algun momento estaba mal escrito, dejar de enseñar el error)
+            TARGET.classList.remove("invalido");
+            TARGET.removeAttribute("data-textoerror");
+        }
+    }
+
+});
