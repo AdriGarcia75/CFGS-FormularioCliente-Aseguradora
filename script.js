@@ -98,10 +98,53 @@ function validarFotoCarne(input) {
     return false; //si ha habido algun error (la imagen es nula o undefined) devolvemos false;
 }
 
-//por hacer
-//CALCULO del seguro
-function calculoSeguro() {
+//CALCULO del seguro, se le pasan por parametros todos los datos del usuario necesarios
+//devuelve una array que contiene los 4 precios, un presupuesto por cada tipo de vehiculo posible
+function calculoSeguro(edad) {
+    const FECHACARNET = document.getElementById("fecha_carnet");
+    const FECHACOCHE = document.getElementById("fecha_matriculacion");
+    //vlaor por posiciones -> 0 = diesel, 1 = gasolina, 2 = hibrido, 3 = electrico
+    let output = [];
+    //conseguimos los años de carnet y de coche multiplicando la diferencia (en milisegundos) de la fecha actual con la fecha del carnet
+    const ANOSCARNET = Math.floor(parseInt(new Date().getTime() - FECHACARNET.getTime()) / (3600 * 24 * 365));
+    const ANOSCOCHE = Math.floor(parseInt(new Date().getTime() - FECHACOCHE.getTime()) / (3600 * 24 * 365));
+    //esta variable contendrá un numero usado como porcentaje para calcular la penalizacion por antiguedad del coche
+    const PENALIZACIONCOCHE = ANOSCOCHE > 10 ? ANOSCOCHE - 10 : 0;
 
+    for (let i = 0; i < 4; i++){
+        //uso un switch para calcular cada vez un precio y cada uno de estos se calculará para un tipo de vehiculo, hasta hacer los 4 tipos
+        let descuentoAntiguedad = ANOSCOCHE >= 5;
+        let preciobase = 0;
+        switch (i){
+            //(preciobase 500, 650, 750, 1000 + antiguedad del coche a partir de 10 años (20% -> 0%))  + (si es menor de 25 pues total * 1.1 del precio base) 
+            //coche diesel
+            case 0:
+                preciobase = 500 + (500 * (PENALIZACIONCOCHE / 100));
+                preciobase = preciobase - (descuentoAntiguedad ? preciobase * 0.1 : 0) + (ANOSCARNET < 5 ? preciobase * 0.1 : 0);
+                output[0] = preciobase;
+                break;
+            //coche gasolina
+            case 1:
+                preciobase = 650 + (650 * (PENALIZACIONCOCHE / 100));
+                preciobase = preciobase - (descuentoAntiguedad ? preciobase * 0.1 : 0) + (ANOSCARNET < 5 ? preciobase * 0.1 : 0);
+                output[1] = preciobase;
+                break;
+            //coche hibrido
+            case 2:
+                preciobase = 750 + (750 * (PENALIZACIONCOCHE / 100));
+                preciobase = preciobase - (descuentoAntiguedad ? preciobase * 0.1 : 0) + (ANOSCARNET < 5 ? preciobase * 0.1 : 0);
+                output[2] = preciobase;
+                break;
+            //coche electrico
+            case 3:
+                preciobase = 1000 + (1000 * (PENALIZACIONCOCHE / 100));
+                preciobase = preciobase - (descuentoAntiguedad ? preciobase * 0.1 : 0) + (ANOSCARNET < 5 ? preciobase * 0.1 : 0);
+                output[3] = preciobase;
+                break;
+        }
+    }
+
+    return output;
 }
 
 //nodo del formulario
