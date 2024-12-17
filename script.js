@@ -1,3 +1,10 @@
+//nodos de los selectores que dependendiento del primero el segundo selector cambia de contenido
+const NODOCOMUNIDADES = document.getElementById("comunidad");
+const NODOPROVINCIAS = document.getElementById("provincia");
+
+const NODOMARCAS = document.getElementById("marca");
+const NODOMODELOS = document.getElementById("modelo");
+
 //Objeto con atributos igual a 17 C.A, que juntas contienen en 50 provincias divididas en una array + Ceuta y Melilla, que realmente no son, pero en este objeto se tratan como "uniprovinciales" homónimas con su C.A.
 const OBJ_COMUNIDADES = {
     "Andalucía": ["Almería", "Cádiz", "Córdoba", "Granada", "Huelva", "Jaén", "Málaga", "Sevilla"],
@@ -196,4 +203,58 @@ NODOFORM.addEventListener("input", (evento) => {
         }
     }
 
+});
+
+//listener para hacer la lista de elecciones basada en el objeto que guarda las comunidades y provincias
+NODOCOMUNIDADES.addEventListener("change", () => {
+
+    const PROVINCIAS = OBJ_COMUNIDADES[NODOCOMUNIDADES.value];
+
+    NODOPROVINCIAS.innerHTML = '<option value="" selected disabled>-- Selecciona una provincia --</option>';
+
+    if (PROVINCIAS) {
+        //quitar la clase disabled para poder añadir provincias
+        NODOPROVINCIAS.disabled = false;
+
+        PROVINCIAS.forEach(function (provincia) {
+            const option = document.createElement("option");
+            option.value = provincia;
+            option.textContent = provincia;
+            NODOPROVINCIAS.appendChild(option);
+        });
+    } else {
+        NODOPROVINCIAS.disabled = true;
+    }
+});
+
+//listener para hacer la lista de elecciones basada en el objeto que guarda las marcas y modelos de coche
+NODOMARCAS.addEventListener("change", () => {
+    const modelos = MARCAMODELOCOCHE[NODOMARCAS.value];
+
+    NODOMODELOS.innerHTML = '<option value="" selected disabled>-- Selecciona un modelo --</option>';
+
+    if (modelos) {
+        NODOMODELOS.disabled = false;
+
+        modelos.forEach(function (modelo) {
+            const option = document.createElement("option");
+            option.value = modelo;
+            option.textContent = modelo;
+            NODOMODELOS.appendChild(option);
+        });
+    } else {
+        NODOMODELOS.disabled = true;
+    }
+});
+
+//listener para que la hora de cargar el contenido del dom para que los formularios tengan siempre los valores por defecto (visual)
+document.addEventListener("DOMContentLoaded", () => {
+
+    //ponemos como valor seleccionado el primer indice al "select indepentiente" (que es un indice por defecto) y añadimos un texto por defecto y desabilitamos el select "dependiente"
+    NODOMARCAS.selectedIndex = 0;
+    NODOCOMUNIDADES.selectedIndex = 0; 
+    NODOPROVINCIAS.innerHTML = '<option value="" selected disabled>-- Selecciona un modelo --</option>';
+    NODOMODELOS.innerHTML = '<option value="" selected disabled>-- Selecciona un modelo --</option>';
+    NODOPROVINCIAS.disabled = true;
+    NODOMODELOS.disabled = true;
 });
