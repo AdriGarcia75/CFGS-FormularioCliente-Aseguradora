@@ -45,6 +45,7 @@ const MARCAMODELOCOCHE = {
     "Dacia": ["Sandero", "Logan", "Duster", "Spring", "Lodgy"]
 };
 
+
 //estas funciones "Validar" reciben el input listo para ser comparado (a excepcion de validarFecha) y devuelven un booleano
 //se puede reutilizar para validar apellidos ya que hay que contemplar el caso de "solo un apellido"
 function validarNombreApellido(input) {
@@ -104,20 +105,18 @@ function validarFotoCarne(input) {
 //CALCULO del seguro, se le pasan por parametros todos los datos del usuario necesarios
 //devuelve una array que contiene los 4 precios, un presupuesto por cada tipo de vehiculo posible
 function calculoSeguro(edad) {
-    const FECHACARNET = document.getElementById("fecha_carnet").value; // Obtener el valor como string
-    const FECHACOCHE = document.getElementById("fecha_matriculacion").value; // Obtener el valor como string
+    const NODOCARNET = document.getElementById("fecha_carnet").value; // Obtener el valor como string
+    const NODOCOCHE = document.getElementById("fecha_matriculacion").value; // Obtener el valor como string
 
-    // Convertir los valores de fecha a objetos Date
-    const fechaCarnet = new Date(FECHACARNET);
-    const fechaCoche = new Date(FECHACOCHE);
+    const FECHACARNET = new Date(NODOCARNET);
+    const FECHACOCHE = new Date(NODOCOCHE);
 
     let output = [];
 
-    // Conseguimos los años de carnet y de coche multiplicando la diferencia (en milisegundos) de la fecha actual con la fecha del carnet
-    const ANOSCARNET = Math.floor((new Date().getTime() - fechaCarnet.getTime()) / (3600 * 24 * 365 * 1000));
-    const ANOSCOCHE = Math.floor((new Date().getTime() - fechaCoche.getTime()) / (3600 * 24 * 365 * 1000));
+    const ANOSCARNET = Math.floor((new Date().getTime() - FECHACARNET.getTime()) / (3600 * 24 * 365 * 1000));
+    const ANOSCOCHE = Math.floor((new Date().getTime() - FECHACOCHE.getTime()) / (3600 * 24 * 365 * 1000));
 
-    // Esta variable contendrá un número usado como porcentaje para calcular la penalización por antigüedad del coche
+    //con este ternario aplicamos o no una penalizacion, si no se coloca, recibirá el valor de 0
     const PENALIZACIONCOCHE = ANOSCOCHE > 10 ? ANOSCOCHE - 10 : 0;
 
     for (let i = 0; i < 4; i++) {
@@ -130,14 +129,14 @@ function calculoSeguro(edad) {
         switch (i) {
             //(preciobase 500, 650, 750, 1000 + antiguedad del coche a partir de 10 años (20% -> 0%))  + (si es menor de 25 pues total * 1.1 del precio base) 
             //coche diesel
-            case 0: 
+            case 0:
                 preciobase = 500 + (500 * (PENALIZACIONCOCHE / 100));
                 preciobase = preciobase - (descuentoAntiguedad ? preciobase * 0.1 : 0) + (ANOSCARNET < 5 ? preciobase * 0.1 : 0);
                 preciobase += preciobase * aumentoEdad;
                 output[0] = preciobase;
                 break;
             //coche gasolina
-            case 1: 
+            case 1:
                 preciobase = 650 + (650 * (PENALIZACIONCOCHE / 100));
                 preciobase = preciobase - (descuentoAntiguedad ? preciobase * 0.1 : 0) + (ANOSCARNET < 5 ? preciobase * 0.1 : 0);
                 preciobase += preciobase * aumentoEdad;
@@ -217,7 +216,7 @@ function validarCampo(TARGET) {
             break;
     }
 
-    //aqui se aplica o se elimina la clase con el estilizado de "data-textoerror"
+    //aqui se aplica o se elimina la clase con el estilizado de "invalido"
     if (!isValid) {
         TARGET.classList.add("invalido");
         TARGET.setAttribute("data-textoerror", mensajeError);
@@ -227,8 +226,8 @@ function validarCampo(TARGET) {
     }
 }
 
-//listener para los eventos blur
-NODOFORM.addEventListener("blur", (evento) => {
+//listener para los eventos blur, cambiado por el evento focusout, ya que al parecer blur se ha quedado antiguo
+NODOFORM.addEventListener("focusout", (evento) => {
     const TARGET = evento.target;
 
     //le asigno a los campos con el id que aparece aqui este evento
@@ -249,14 +248,14 @@ NODOFORM.addEventListener("input", (evento) => {
 
 //listener para hacer la lista de elecciones basada en comunidades/provincias
 NODOCOMUNIDADES.addEventListener("change", () => {
-    const provincias = OBJ_COMUNIDADES[NODOCOMUNIDADES.value]; //esto recoge la array que toca de provincias
+    const PROVINCIAS = OBJ_COMUNIDADES[NODOCOMUNIDADES.value]; //esto recoge la array que toca de provincias
 
     NODOPROVINCIAS.innerHTML = '<option value="" selected disabled>-- Elije una opción --</option>';
 
-    if (provincias) {
+    if (PROVINCIAS) {
         NODOPROVINCIAS.disabled = false;
 
-        provincias.forEach(function (provincia) {
+        PROVINCIAS.forEach(function (provincia) {
             const option = document.createElement("option");
             option.value = provincia;
             option.textContent = provincia;
@@ -384,8 +383,7 @@ NODOFORM.addEventListener("submit", function (e) {
         const CONTENEDORSEGUROS = document.createElement("div");
         CONTENEDORSEGUROS.classList.add("contenedor-seguro");
 
-        
-        const TIPOSSEGURO = ["Terceros", "Terceros Ampliado", "Con Franquicia", "Todo Riesgo"];
+        const TIPOSSEGURO = ["Terceros", "Terceros ampliado", "Franquicia", "Todo riesgo"];
 
         //miramos a ver que seguro ha elegido en concreto nuestro cliente
         const SEGUROCLIENTE = document.getElementById("tipo_seguro").value;
@@ -395,9 +393,8 @@ NODOFORM.addEventListener("submit", function (e) {
             const DIVSEGURO = document.createElement("div");
             DIVSEGURO.classList.add("seguro");
 
-            //aqui haremos la distincion dandole una clase al div respecto al seguro que el cliente eligió en un principio
-            //NO FUNCIONA, MIRALO
-            if (index == SEGUROCLIENTE) {
+            //aqui asigno una distincion dandole una clase al div respecto al seguro que el cliente eligió en un principio
+            if (TIPOSSEGURO[index] == SEGUROCLIENTE) {
                 DIVSEGURO.classList.add("resaltado");
             }
 
@@ -409,6 +406,7 @@ NODOFORM.addEventListener("submit", function (e) {
                 <p>Tipo de Seguro: ${TIPOSSEGURO[index]}</p>
                 <p>Precio: ${precio.toFixed(2)} €</p>
                 <button class="eliminar">Eliminar</button>
+                <button class="alerta">Aceptar</button>
             `;
             CONTENEDORSEGUROS.appendChild(DIVSEGURO);
         });
@@ -416,14 +414,27 @@ NODOFORM.addEventListener("submit", function (e) {
         //añadimos al body nuestro contenedor de seguros, que contiene los 4 seguros
         document.body.appendChild(CONTENEDORSEGUROS);
 
+        //esto selecciona a cada nodo que contenga en alguna parte de su codigo la clase "eliminar", refiriendose al boton de eliminar, asi podemos añadirle el evento que le pertoca
         const BOTONELIMINAR = CONTENEDORSEGUROS.querySelectorAll(".eliminar");
 
         BOTONELIMINAR.forEach(boton => {
-            boton.addEventListener("click", function() {
+            boton.addEventListener("click", function () {
+                //con esta linea consigo siempre el nodo de clase "seguro" más cercano, en este caso, él mismo
                 const DIVSEGURO = boton.closest(".seguro");
                 DIVSEGURO.remove();
             });
         });
+
+        //la misma logica que BOTONELIMINAR
+        const BOTONALERTA = CONTENEDORSEGUROS.querySelectorAll(".alerta");
+
+        BOTONALERTA.forEach(boton => {
+            boton.addEventListener("click", function () {
+                //añadimos un alert de agradecimiento a cada boton
+                alert("Gracias por aceptar el seguro, formulario hecho por Adrián García Pocoví");
+            });
+        });
+
     } else {
         alert("Hay errores en los datos ingresados. Chequea si algún campo está resaltado en rojo.");
     }

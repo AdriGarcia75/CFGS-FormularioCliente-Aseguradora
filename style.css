@@ -1,17 +1,36 @@
-body{
+body {
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; 
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px; 
+    background-color: #f5f5f5; 
+    box-sizing: border-box; 
 }
 
-#form{
-    margin: 0 auto; /*gracias al flex del body podemos centrar con esto el form*/
+
+#form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 1000px;
+    height: auto;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
     background-color: lightslategray;
     padding: 20px;
+    margin-bottom: 20px; 
     border: 2px solid black;
     border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
 }
 
-.campoForm{
-    margin-bottom: 10px;
+.campoForm {
+    margin-bottom: 15px;
+    width: 100%;
 }
 
 /* estilos para mostrar errores */
@@ -27,6 +46,25 @@ body{
     content: attr(data-textoerror);
 }
 
+.contenedor-seguro {
+    display: flex;
+    flex-wrap: wrap; 
+    justify-content: space-around;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    max-width: 600px;
+    margin-top: 20px;
+    box-sizing: border-box;
+}
+.seguro{
+    width: 49%;
+    border: 2px solid black;
+    border-radius: 10px;
+    padding: 0 10px 10px;
+    box-sizing: border-box;
+}
+
 .resaltado{
-    background-color: blue;
+    background-color: aquamarine;
 }
