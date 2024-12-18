@@ -26,3 +26,7 @@ body{
     margin-top: 5px;
     content: attr(data-textoerror);
 }
+
+.resaltado{
+    background-color: blue;
+}

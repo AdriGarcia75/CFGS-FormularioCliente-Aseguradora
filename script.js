@@ -1,3 +1,6 @@
+//nodo del formulario
+const NODOFORM = document.getElementById("form");
+
 //nodos de los selectores que dependendiento del primero el segundo selector cambia de contenido
 const NODOCOMUNIDADES = document.getElementById("comunidad");
 const NODOPROVINCIAS = document.getElementById("provincia");
@@ -51,14 +54,14 @@ function validarNombreApellido(input) {
 
 //validar si el dni cumple con el formato de 8 numeros y 1 letra mayus
 function validarDNI(input) {
-    return /^\d{8}[A-Z]$/;
+    return /^\d{8}[A-Z]$/.test(input);
 }
 
 //devolverá true de 18 hasta 90 años de edad, a partir de una fecha
 function validarEdad(input) {
     const INPUTDATE = new Date(input); //sabemos que input es un string con el formato YYYY-MM-DD, el que usa el objeto Date
     const AHORA = new Date(); //esto crea un nuevo objeto fecha con la fecha del momento de ejecucion (siendo "ahora" el momento cuando se ejecute)
-    const EDAD = Math.floor((AHORA - INPUTDATE) * 1000 * 3600 * 24 * 365); //restamos las fechas, y hacemos esta conversion: ms -> sec -> hora -> 
+    const EDAD = AHORA.getFullYear() - INPUTDATE.getFullYear(); //restamos las fechas, y hacemos esta conversion: ms -> sec -> hora -> 
     return EDAD >= 18 && EDAD <= 90;
 }
 
@@ -101,44 +104,57 @@ function validarFotoCarne(input) {
 //CALCULO del seguro, se le pasan por parametros todos los datos del usuario necesarios
 //devuelve una array que contiene los 4 precios, un presupuesto por cada tipo de vehiculo posible
 function calculoSeguro(edad) {
-    const FECHACARNET = document.getElementById("fecha_carnet");
-    const FECHACOCHE = document.getElementById("fecha_matriculacion");
-    //vlaor por posiciones -> 0 = diesel, 1 = gasolina, 2 = hibrido, 3 = electrico
+    const FECHACARNET = document.getElementById("fecha_carnet").value; // Obtener el valor como string
+    const FECHACOCHE = document.getElementById("fecha_matriculacion").value; // Obtener el valor como string
+
+    // Convertir los valores de fecha a objetos Date
+    const fechaCarnet = new Date(FECHACARNET);
+    const fechaCoche = new Date(FECHACOCHE);
+
     let output = [];
-    //conseguimos los años de carnet y de coche multiplicando la diferencia (en milisegundos) de la fecha actual con la fecha del carnet
-    const ANOSCARNET = Math.floor(parseInt(new Date().getTime() - FECHACARNET.getTime()) / (3600 * 24 * 365));
-    const ANOSCOCHE = Math.floor(parseInt(new Date().getTime() - FECHACOCHE.getTime()) / (3600 * 24 * 365));
-    //esta variable contendrá un numero usado como porcentaje para calcular la penalizacion por antiguedad del coche
+
+    // Conseguimos los años de carnet y de coche multiplicando la diferencia (en milisegundos) de la fecha actual con la fecha del carnet
+    const ANOSCARNET = Math.floor((new Date().getTime() - fechaCarnet.getTime()) / (3600 * 24 * 365 * 1000));
+    const ANOSCOCHE = Math.floor((new Date().getTime() - fechaCoche.getTime()) / (3600 * 24 * 365 * 1000));
+
+    // Esta variable contendrá un número usado como porcentaje para calcular la penalización por antigüedad del coche
     const PENALIZACIONCOCHE = ANOSCOCHE > 10 ? ANOSCOCHE - 10 : 0;
 
-    for (let i = 0; i < 4; i++){
-        //uso un switch para calcular cada vez un precio y cada uno de estos se calculará para un tipo de vehiculo, hasta hacer los 4 tipos
+    for (let i = 0; i < 4; i++) {
         let descuentoAntiguedad = ANOSCOCHE >= 5;
         let preciobase = 0;
-        switch (i){
+
+        //aumento del 10% si la edad es menor a 25
+        let aumentoEdad = edad < 25 ? 0.1 : 0;
+
+        switch (i) {
             //(preciobase 500, 650, 750, 1000 + antiguedad del coche a partir de 10 años (20% -> 0%))  + (si es menor de 25 pues total * 1.1 del precio base) 
             //coche diesel
-            case 0:
+            case 0: 
                 preciobase = 500 + (500 * (PENALIZACIONCOCHE / 100));
                 preciobase = preciobase - (descuentoAntiguedad ? preciobase * 0.1 : 0) + (ANOSCARNET < 5 ? preciobase * 0.1 : 0);
+                preciobase += preciobase * aumentoEdad;
                 output[0] = preciobase;
                 break;
             //coche gasolina
-            case 1:
+            case 1: 
                 preciobase = 650 + (650 * (PENALIZACIONCOCHE / 100));
                 preciobase = preciobase - (descuentoAntiguedad ? preciobase * 0.1 : 0) + (ANOSCARNET < 5 ? preciobase * 0.1 : 0);
+                preciobase += preciobase * aumentoEdad;
                 output[1] = preciobase;
                 break;
             //coche hibrido
             case 2:
                 preciobase = 750 + (750 * (PENALIZACIONCOCHE / 100));
                 preciobase = preciobase - (descuentoAntiguedad ? preciobase * 0.1 : 0) + (ANOSCARNET < 5 ? preciobase * 0.1 : 0);
+                preciobase += preciobase * aumentoEdad;
                 output[2] = preciobase;
                 break;
             //coche electrico
             case 3:
                 preciobase = 1000 + (1000 * (PENALIZACIONCOCHE / 100));
                 preciobase = preciobase - (descuentoAntiguedad ? preciobase * 0.1 : 0) + (ANOSCARNET < 5 ? preciobase * 0.1 : 0);
+                preciobase += preciobase * aumentoEdad;
                 output[3] = preciobase;
                 break;
         }
@@ -147,119 +163,100 @@ function calculoSeguro(edad) {
     return output;
 }
 
-//nodo del formulario
-const NODOFORM = document.getElementById("form");
+//funcion que unifica la validacion de cualquier campo, cada dato del campo que ejecute esto será validado por la función que le pertoque
+function validarCampo(TARGET) {
+    let isValid = true;
+    let mensajeError = "";
+    const valor = TARGET.value;
 
-//listener de eventos de tipo blur para el formulario
+    // Switch que ejecuta la validación según el ID del campo
+    switch (TARGET.id) {
+
+        case "nombre":
+        case "apellidos":
+            isValid = validarNombreApellido(valor);
+            mensajeError = "Debe tener entre 3 y 30 caracteres, comenzando en mayúscula.";
+            break;
+
+        case "fecha_nacimiento":
+        case "fecha_carnet":
+        case "fecha_matriculacion":
+
+            isValid = validarFecha(valor);
+            mensajeError = "Introduce una fecha válida.";
+            break;
+
+        case "dni":
+            isValid = validarDNI(valor);
+            mensajeError = "El DNI debe tener 8 números y 1 letra mayúscula.";
+            break;
+
+        case "email":
+            isValid = validarCorreo(valor);
+            mensajeError = "Formato de correo inválido.";
+            break;
+
+        case "telefono":
+            isValid = validarTelefono(valor);
+            mensajeError = "El teléfono debe tener 9 dígitos.";
+            break;
+
+        case "matricula":
+            isValid = validarMatricula(valor);
+            mensajeError = "La matrícula debe seguir el formato dddd-CCC.";
+            break;
+
+        case "codigo_postal":
+            isValid = validarCodigoPostal(valor);
+            mensajeError = "El código postal debe tener 5 dígitos.";
+            break;
+
+        case "sexo":
+            isValid = valor !== "";
+            mensajeError = "Este campo es obligatorio.";
+            break;
+    }
+
+    //aqui se aplica o se elimina la clase con el estilizado de "data-textoerror"
+    if (!isValid) {
+        TARGET.classList.add("invalido");
+        TARGET.setAttribute("data-textoerror", mensajeError);
+    } else {
+        TARGET.classList.remove("invalido");
+        TARGET.removeAttribute("data-textoerror");
+    }
+}
+
+//listener para los eventos blur
 NODOFORM.addEventListener("blur", (evento) => {
     const TARGET = evento.target;
 
-    //tagname devuelve la tag de html del evento que ha sido activado, devuelve el nombre en mayusculas (esto es para asegurarse que es el campo input el que llama)
-    if (TARGET.tagName == "INPUT" || TARGET.tagName == "SELECT") {
-        //utilizamos una variable booleana para controlar el resultado de una validacion de un campo en especifico
-        let isValid = true;
-        let valor = TARGET.valor;
-        mensajeError = "";
-
-        switch (TARGET.id) {
-            case "nombre":
-            case "apellidos":
-                // Usamos la función para validar nombre y apellido
-                isValid = validarNombreApellido(valor);
-                mensajeError = "Este campo es obligatorio.";
-                break;
-            case "fecha_carnet":
-                isValid = validarFecha(valor);
-                mensajeError = "Introduce una fecha válida para el carnet de conducir.";
-                break;
-            case "fecha_matriculacion":
-                isValid = validarFecha(valor);
-                mensajeError = "Introduce una fecha válida para la matriculación.";
-                break;
-            case "fecha_nacimiento":
-                isValid = validarFecha(valor);
-                mensajeError = "Introduce una fecha válida de nacimiento.";
-                break;
-            case "sexo":
-                isValid = valor != "";
-                mensajeError = "Selecciona un sexo.";
-                break;
-        }
-
-        //y dependiendo de si el campo es valido o no
-        if (!isValid) {
-            //añadimos una clase para indicar que el campo es erroneo y le añadimos un mensaje
-            TARGET.classList.add("invalido");
-            TARGET.setAttribute("data-textoerror", mensajeError);
-        } else {
-            //y aqui quitamos esta información (por si en algun momento estaba mal escrito, dejar de enseñar el error)
-            TARGET.classList.remove("invalido");
-            TARGET.removeAttribute("data-textoerror");
-        }
+    //le asigno a los campos con el id que aparece aqui este evento
+    if (["nombre", "apellidos", "fecha_nacimiento", "fecha_carnet", "fecha_matriculacion"].includes(TARGET.id)) {
+        validarCampo(TARGET);
     }
-
 });
 
-//listener de eventos de tipo input para el formulario
+//listener para los eventos input
 NODOFORM.addEventListener("input", (evento) => {
     const TARGET = evento.target;
 
-    //tagname devuelve la tag de html del evento que ha sido activado, devuelve el nombre en mayusculas (esto es para asegurarse que es el campo input el que llama)
-    if (TARGET.tagName == "INPUT") {
-        //utilizamos una variable booleana para controlar el resultado de una validacion de un campo en especifico
-        let isValid = true;
-        let valor = TARGET.valor;
-        mensajeError = "";
-
-        switch (TARGET.id) {
-            case "dni":
-                isValid = validarDNI(valor);
-                mensajeError = "El DNI debe tener 8 números y 1 letra mayúscula.";
-                break;
-            case "email":
-                isValid = validarCorreo(valor);
-                mensajeError = "Introduce un correo electrónico válido.";
-                break;
-            case "codigo_postal":
-                isValid = validarCodigoPostal(valor);
-                mensajeError = "Introduce un código postal válido.";
-                break;
-            case "telefono":
-                isValid = validarTelefono(valor);
-                mensajeError = "Introduce un código postal válido.";
-                break;
-            case "matricula":
-                isValid = validarMatricula(valor);
-                mensajeError = "Introduce una matricula que cumpla con el formato"
-                break;
-        }
-
-        //y dependiendo de si el campo es valido o no
-        if (!isValid) {
-            //añadimos una clase para indicar que el campo es erroneo y le añadimos un mensaje
-            TARGET.classList.add("invalido");
-            TARGET.setAttribute("data-textoerror", mensajeError);
-        } else {
-            //y aqui quitamos esta información (por si en algun momento estaba mal escrito, dejar de enseñar el error)
-            TARGET.classList.remove("invalido");
-            TARGET.removeAttribute("data-textoerror");
-        }
+    //le asigno a los campos con el id que aparece aqui este evento
+    if (["dni", "email", "telefono", "matricula", "codigo_postal"].includes(TARGET.id)) {
+        validarCampo(TARGET);
     }
-
 });
 
-//listener para hacer la lista de elecciones basada en el objeto que guarda las comunidades y provincias
+//listener para hacer la lista de elecciones basada en comunidades/provincias
 NODOCOMUNIDADES.addEventListener("change", () => {
+    const provincias = OBJ_COMUNIDADES[NODOCOMUNIDADES.value]; //esto recoge la array que toca de provincias
 
-    const PROVINCIAS = OBJ_COMUNIDADES[NODOCOMUNIDADES.value];
+    NODOPROVINCIAS.innerHTML = '<option value="" selected disabled>-- Elije una opción --</option>';
 
-    NODOPROVINCIAS.innerHTML = '<option value="" selected disabled>-- Selecciona una provincia --</option>';
-
-    if (PROVINCIAS) {
-        //quitar la clase disabled para poder añadir provincias
+    if (provincias) {
         NODOPROVINCIAS.disabled = false;
 
-        PROVINCIAS.forEach(function (provincia) {
+        provincias.forEach(function (provincia) {
             const option = document.createElement("option");
             option.value = provincia;
             option.textContent = provincia;
@@ -272,9 +269,9 @@ NODOCOMUNIDADES.addEventListener("change", () => {
 
 //listener para hacer la lista de elecciones basada en el objeto que guarda las marcas y modelos de coche
 NODOMARCAS.addEventListener("change", () => {
-    const modelos = MARCAMODELOCOCHE[NODOMARCAS.value];
+    const modelos = MARCAMODELOCOCHE[NODOMARCAS.value]; //esto recoge la array que toca de modelos de coche
 
-    NODOMODELOS.innerHTML = '<option value="" selected disabled>-- Selecciona un modelo --</option>';
+    NODOMODELOS.innerHTML = '<option value="" selected disabled>-- Elije una opción --</option>';
 
     if (modelos) {
         NODOMODELOS.disabled = false;
@@ -290,14 +287,144 @@ NODOMARCAS.addEventListener("change", () => {
     }
 });
 
-//listener para que la hora de cargar el contenido del dom para que los formularios tengan siempre los valores por defecto (visual)
+//listener para que la hora de cargar el contenido del dom los formularios tengan siempre los valores por defecto (es visual, pero lo veo necesario)
 document.addEventListener("DOMContentLoaded", () => {
 
     //ponemos como valor seleccionado el primer indice al "select indepentiente" (que es un indice por defecto) y añadimos un texto por defecto y desabilitamos el select "dependiente"
     NODOMARCAS.selectedIndex = 0;
-    NODOCOMUNIDADES.selectedIndex = 0; 
-    NODOPROVINCIAS.innerHTML = '<option value="" selected disabled>-- Selecciona un modelo --</option>';
-    NODOMODELOS.innerHTML = '<option value="" selected disabled>-- Selecciona un modelo --</option>';
+    NODOCOMUNIDADES.selectedIndex = 0;
+    NODOPROVINCIAS.innerHTML = '<option value="" selected disabled>-- Elije una opción --</option>';
+    NODOMODELOS.innerHTML = '<option value="" selected disabled>-- Elije una opción --</option>';
     NODOPROVINCIAS.disabled = true;
     NODOMODELOS.disabled = true;
+});
+
+//function de submit que valida todos los datos antes de operar
+NODOFORM.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    //controlaremos si todos los campos se verifican
+    let todosValidos = true;
+    //seleccionamos TODOS los datos del form, que son contenidos en inputs y selects
+    const inputs = NODOFORM.querySelectorAll("input, select");
+
+    //para cada input
+    inputs.forEach(input => {
+        const valor = input.value;
+        let isValid = true;
+        let mensajeError = "";
+
+        //hacemos un switch para que se valide como toque
+        switch (input.id) {
+            case "nombre":
+                isValid = validarNombreApellido(valor);
+                mensajeError = "Debe tener entre 3 y 30 caracteres, comenzando en mayúscula.";
+                break;
+            case "apellidos":
+                isValid = validarNombreApellido(valor);
+                mensajeError = "Debe tener entre 3 y 30 caracteres, comenzando en mayúscula.";
+                break;
+            case "fecha_nacimiento":
+                isValid = validarEdad(valor);
+                mensajeError = "Introduce una fecha válida entre 18 y 90 años.";
+                break;
+            case "fecha_carnet":
+                isValid = validarFecha(valor);
+                mensajeError = "Introduce una fecha válida.";
+                break;
+            case "fecha_matriculacion":
+                isValid = validarFecha(valor);
+                mensajeError = "Introduce una fecha válida.";
+                break;
+            case "dni":
+                isValid = validarDNI(valor);
+                mensajeError = "El DNI debe tener 8 números y 1 letra mayúscula.";
+                break;
+            case "email":
+                isValid = validarCorreo(valor);
+                mensajeError = "Formato de correo inválido.";
+                break;
+            case "telefono":
+                isValid = validarTelefono(valor);
+                mensajeError = "El teléfono debe tener 9 dígitos.";
+                break;
+            case "matricula":
+                isValid = validarMatricula(valor);
+                mensajeError = "La matrícula debe seguir el formato dddd-CCC.";
+                break;
+            case "codigo_postal":
+                isValid = validarCodigoPostal(valor);
+                mensajeError = "El código postal debe tener 5 dígitos.";
+                break;
+            case "sexo":
+                isValid = valor != "";
+                mensajeError = "Este campo es obligatorio.";
+                break;
+        }
+
+        if (!isValid) {
+            input.classList.add("invalido");
+            input.setAttribute("data-textoerror", mensajeError);
+            todosValidos = false;
+        } else {
+            input.classList.remove("invalido");
+            input.removeAttribute("data-textoerror");
+        }
+    });
+
+    //si todo se ha validado
+    if (todosValidos) {
+        const MARCA = document.getElementById("marca").value;
+        const MODELO = document.getElementById("modelo").value;
+        const EDAD = document.getElementById("fecha_nacimiento").value;
+
+        const PRECIOS = calculoSeguro(EDAD);
+
+        //creamos el contenedor de seguros y le damos una clase
+        const CONTENEDORSEGUROS = document.createElement("div");
+        CONTENEDORSEGUROS.classList.add("contenedor-seguro");
+
+        
+        const TIPOSSEGURO = ["Terceros", "Terceros Ampliado", "Con Franquicia", "Todo Riesgo"];
+
+        //miramos a ver que seguro ha elegido en concreto nuestro cliente
+        const SEGUROCLIENTE = document.getElementById("tipo_seguro").value;
+
+        //añadimos cada div con su respectivo precio y el indice que indica que seguro es
+        PRECIOS.forEach((precio, index) => {
+            const DIVSEGURO = document.createElement("div");
+            DIVSEGURO.classList.add("seguro");
+
+            //aqui haremos la distincion dandole una clase al div respecto al seguro que el cliente eligió en un principio
+            //NO FUNCIONA, MIRALO
+            if (index == SEGUROCLIENTE) {
+                DIVSEGURO.classList.add("resaltado");
+            }
+
+            //creamos nuestro hijo y le hacemos append al padre
+            DIVSEGURO.innerHTML = `
+                <h3>Seguro ${TIPOSSEGURO[index]}</h3>
+                <p>Marca: ${MARCA}</p>
+                <p>Modelo: ${MODELO}</p>
+                <p>Tipo de Seguro: ${TIPOSSEGURO[index]}</p>
+                <p>Precio: ${precio.toFixed(2)} €</p>
+                <button class="eliminar">Eliminar</button>
+            `;
+            CONTENEDORSEGUROS.appendChild(DIVSEGURO);
+        });
+
+        //añadimos al body nuestro contenedor de seguros, que contiene los 4 seguros
+        document.body.appendChild(CONTENEDORSEGUROS);
+
+        const BOTONELIMINAR = CONTENEDORSEGUROS.querySelectorAll(".eliminar");
+
+        BOTONELIMINAR.forEach(boton => {
+            boton.addEventListener("click", function() {
+                const DIVSEGURO = boton.closest(".seguro");
+                DIVSEGURO.remove();
+            });
+        });
+    } else {
+        alert("Hay errores en los datos ingresados. Chequea si algún campo está resaltado en rojo.");
+    }
 });
