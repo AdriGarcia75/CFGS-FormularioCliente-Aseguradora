@@ -211,7 +211,7 @@ function validarCampo(TARGET) {
             break;
 
         case "sexo":
-            isValid = valor !== "";
+            isValid = valor != "";
             mensajeError = "Este campo es obligatorio.";
             break;
     }
